@@ -18,6 +18,15 @@ class Platformer extends Phaser.Scene {
 
     preload(){
         this.load.scenePlugin('AnimatedTiles', './lib/AnimatedTiles.js', 'animatedTiles', 'animatedTiles');
+
+        this.load.audio('bgmusic', 'assets/bgmusic.mp3');
+        this.load.audio('lostSfx', 'assets/lost.ogg');
+        this.load.audio('jumpSfx', 'assets/jump.ogg');
+        this.load.audio('winSfx', 'assets/winning.ogg');
+        this.load.audio('foodSfx', 'assets/food.ogg');
+        this.load.audio('powerupSfx', 'assets/powerup.ogg');
+        this.load.audio('slowdownSfx', 'assets/slowdowns.ogg');
+
     }
 
     updateHungerBar() {
@@ -48,6 +57,20 @@ class Platformer extends Phaser.Scene {
     }
 
     create() {
+        this.bgmusic = this.sound.add('bgmusic', {
+            loop: true,
+            volume: 0.4
+        });
+        this.bgmusic.play();
+
+        // SFX
+        this.jumpSound = this.sound.add('jumpSfx', { volume: 0.5 });
+        this.winSound = this.sound.add('winSfx', { volume: 0.7 });
+        this.lostSound = this.sound.add('lostSfx', { volume: 0.7 });
+        this.foodSound = this.sound.add('foodSfx', { volume: 0.6 });
+        this.powerupSound = this.sound.add('powerupSfx', { volume: 0.6 });
+        this.slowdownSound = this.sound.add('slowdownSfx', { volume: 0.6 });
+
         this.cameras.main.setZoom(2.5);
         // Create a new tilemap game object which uses 18x18 pixel tiles, and is
         // 45 tiles wide and 25 tiles tall.
@@ -196,6 +219,7 @@ class Platformer extends Phaser.Scene {
         // collision with powerup
         this.physics.add.overlap(my.sprite.player, this.powerupGroup, (obj1, obj2) => {
             obj2.destroy(); // remove powerup on overlap
+            this.powerupSound.play();
             const originalJUMP = this.JUMP_VELOCITY;
             this.JUMP_VELOCITY = -600
             this.time.delayedCall(1500, () => {
@@ -206,6 +230,7 @@ class Platformer extends Phaser.Scene {
         //collision with slowdown
         this.physics.add.overlap(my.sprite.player, this.slowdownGroup, (obj1, obj2) => {
             obj2.destroy(); // remove powerup on overlap
+            this.slowdownSound.play();
             const originalAcceleration = this.ACCELERATION;
             const originalDRAG = this.DRAG
             this.ACCELERATION = 100;
@@ -221,6 +246,7 @@ class Platformer extends Phaser.Scene {
         this.physics.add.overlap(my.sprite.player, this.foodGroup, (obj1, obj2) => {
             obj2.destroy(); // remove powerup on overlap
             this.HUNGER = Math.min(this.HUNGER_MAX, this.HUNGER + 12);
+            this.foodSound.play();
         });
 
         // set up Phaser-provided cursor key input
@@ -335,6 +361,7 @@ class Platformer extends Phaser.Scene {
                 onComplete: () => {
                     player.setPosition(px, py);
                     this.showEndScreen("You win!");
+                    this.winSound.play();
                 }
             });
 
@@ -359,6 +386,7 @@ class Platformer extends Phaser.Scene {
 
         if (this.HUNGER <= 0 && !this.isGameOver && !this.isWin) {
             this.isGameOver = true;
+            this.lostSound.play();
             this.showEndScreen("Your stomach is empty!");
         }
 
@@ -421,6 +449,7 @@ class Platformer extends Phaser.Scene {
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
             // TODO: set a Y velocity to have the player "jump" upwards (negative Y direction)
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+            this.jumpSound.play();
 
             const vx = Phaser.Math.Clamp(
                 my.sprite.player.body.velocity.x,
@@ -428,7 +457,7 @@ class Platformer extends Phaser.Scene {
                 400
             );
             my.sprite.player.setVelocityX(vx);
-            }
+        }
         if (my.sprite.player.body.touching.down) {
             this.movingPlatforms.children.iterate(platform => {
                 if (!platform) return;
