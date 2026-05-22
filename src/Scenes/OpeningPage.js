@@ -133,10 +133,8 @@ class OpeningPage extends Phaser.Scene {
             repeat: -1
         });
 
-        //////////////////////////////////////////////////
+        ///////////////////
         // START GAME INPUT
-        //////////////////////////////////////////////////
-
         this.input.keyboard.once('keydown-SPACE', () => {
             this.scene.start('loadScene');
         });
