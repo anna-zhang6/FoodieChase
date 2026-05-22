@@ -61,7 +61,9 @@ class Platformer extends Phaser.Scene {
             loop: true,
             volume: 0.4
         });
-        this.bgmusic.play();
+        if (!this.bgmusic.play()){
+            this.bgmusic.play();
+        }
 
         // SFX
         this.jumpSound = this.sound.add('jumpSfx', { volume: 0.5 });
